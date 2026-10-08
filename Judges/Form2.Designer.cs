@@ -28,18 +28,78 @@
         /// </summary>
         private void InitializeComponent()
         {
+            textBox1 = new TextBox();
+            label1 = new Label();
+            label2 = new Label();
+            textBox2 = new TextBox();
+            button1 = new Button();
             SuspendLayout();
+            // 
+            // textBox1
+            // 
+            textBox1.Location = new Point(108, 56);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new Size(100, 23);
+            textBox1.TabIndex = 0;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(108, 38);
+            label1.Name = "label1";
+            label1.Size = new Size(41, 15);
+            label1.TabIndex = 1;
+            label1.Text = "Логин";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(108, 98);
+            label2.Name = "label2";
+            label2.Size = new Size(49, 15);
+            label2.TabIndex = 3;
+            label2.Text = "Пароль";
+            // 
+            // textBox2
+            // 
+            textBox2.Location = new Point(108, 116);
+            textBox2.Name = "textBox2";
+            textBox2.Size = new Size(100, 23);
+            textBox2.TabIndex = 2;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(98, 164);
+            button1.Name = "button1";
+            button1.Size = new Size(120, 23);
+            button1.TabIndex = 4;
+            button1.Text = "Зарегистрироваться";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
             // Form2
             // 
-            AutoScaleDimensions = new SizeF(13F, 32F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(331, 248);
+            Controls.Add(button1);
+            Controls.Add(label2);
+            Controls.Add(textBox2);
+            Controls.Add(label1);
+            Controls.Add(textBox1);
+            Margin = new Padding(2, 1, 2, 1);
             Name = "Form2";
             Text = "Form2";
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+        private TextBox textBox1;
+        private Label label1;
+        private Label label2;
+        private TextBox textBox2;
+        private Button button1;
     }
 }
