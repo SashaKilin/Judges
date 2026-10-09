@@ -36,26 +36,30 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(344, 84);
+            label1.Location = new Point(185, 39);
+            label1.Margin = new Padding(2, 0, 2, 0);
             label1.Name = "label1";
-            label1.Size = new Size(233, 32);
+            label1.Size = new Size(115, 15);
             label1.TabIndex = 0;
             label1.Text = "Добро пожаловать!";
             // 
             // button1
             // 
-            button1.Location = new Point(368, 170);
+            button1.Location = new Point(198, 80);
+            button1.Margin = new Padding(2, 1, 2, 1);
             button1.Name = "button1";
-            button1.Size = new Size(150, 46);
+            button1.Size = new Size(81, 22);
             button1.TabIndex = 1;
             button1.Text = "Войти";
             button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
             // button2
             // 
-            button2.Location = new Point(354, 258);
+            button2.Location = new Point(191, 121);
+            button2.Margin = new Padding(2, 1, 2, 1);
             button2.Name = "button2";
-            button2.Size = new Size(184, 46);
+            button2.Size = new Size(99, 22);
             button2.TabIndex = 2;
             button2.Text = "Регистрация";
             button2.UseVisualStyleBackColor = true;
@@ -63,12 +67,13 @@
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(13F, 32F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(911, 592);
+            ClientSize = new Size(491, 278);
             Controls.Add(button2);
             Controls.Add(button1);
             Controls.Add(label1);
+            Margin = new Padding(2, 1, 2, 1);
             Name = "Form1";
             Text = "Form1";
             ResumeLayout(false);

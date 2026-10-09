@@ -16,5 +16,15 @@ namespace Judges
 
             form2.FormClosed += (s, args) => this.Close();
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            LogIn login = new LogIn();
+            login.Show();
+
+            this.Hide();
+
+            login.FormClosed += (s, args) => this.Close();
+        }
     }
 }
