@@ -27,13 +27,13 @@ namespace Judges
             }
             else
             {
-                using(var connection = new NpgsqlConnection(connStr))
+                using (var connection = new NpgsqlConnection(connStr))
                 {
                     connection.Open();
 
                     string sql = "INSERT INTO users (username, password) VALUES (@user, @pass);";
 
-                    using(var command = new NpgsqlCommand(sql, connection))
+                    using (var command = new NpgsqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("user", textBox1.Text);
                         command.Parameters.AddWithValue("pass", textBox2.Text);
@@ -41,9 +41,17 @@ namespace Judges
                         command.ExecuteNonQuery();
 
                         MessageBox.Show("Регистрация прошла успешно!");
+
+                        this.Close();
                     }
                 }
             }
+        }
+
+        private void Form2_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Form1 form1 = new Form1();
+            form1.Show();
         }
     }
 }

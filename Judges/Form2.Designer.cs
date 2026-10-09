@@ -90,6 +90,7 @@
             Margin = new Padding(2, 1, 2, 1);
             Name = "Form2";
             Text = "Form2";
+            FormClosed += Form2_FormClosed;
             ResumeLayout(false);
             PerformLayout();
         }

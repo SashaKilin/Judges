@@ -13,8 +13,6 @@ namespace Judges
             form2.Show();
 
             this.Hide();
-
-            form2.FormClosed += (s, args) => this.Close();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -23,8 +21,11 @@ namespace Judges
             login.Show();
 
             this.Hide();
+        }
 
-            login.FormClosed += (s, args) => this.Close();
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
         }
     }
 }
