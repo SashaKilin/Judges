@@ -89,6 +89,7 @@
             Controls.Add(label1);
             Name = "LogIn";
             Text = "LogIn";
+            FormClosed += LogIn_FormClosed;
             ResumeLayout(false);
             PerformLayout();
         }
