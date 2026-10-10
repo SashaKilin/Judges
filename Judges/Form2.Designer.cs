@@ -33,6 +33,7 @@
             label2 = new Label();
             textBox2 = new TextBox();
             button1 = new Button();
+            button2 = new Button();
             SuspendLayout();
             // 
             // textBox1
@@ -69,27 +70,44 @@
             // 
             // button1
             // 
-            button1.Location = new Point(98, 164);
+            button1.Location = new Point(12, 170);
             button1.Name = "button1";
-            button1.Size = new Size(120, 23);
+            button1.Size = new Size(137, 32);
             button1.TabIndex = 4;
             button1.Text = "Зарегистрироваться";
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
             // 
+            // button2
+            // 
+            button2.Location = new Point(155, 170);
+            button2.Name = "button2";
+            button2.Size = new Size(137, 32);
+            button2.TabIndex = 5;
+            button2.Text = "Назад";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
+            // 
             // Form2
             // 
+            AcceptButton = button1;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(331, 248);
+            CancelButton = button2;
+            ClientSize = new Size(323, 248);
+            Controls.Add(button2);
             Controls.Add(button1);
             Controls.Add(label2);
             Controls.Add(textBox2);
             Controls.Add(label1);
             Controls.Add(textBox1);
             Margin = new Padding(2, 1, 2, 1);
+            MaximizeBox = false;
+            MaximumSize = new Size(339, 287);
+            MinimumSize = new Size(339, 287);
             Name = "Form2";
-            Text = "Form2";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Регистрация";
             FormClosed += Form2_FormClosed;
             ResumeLayout(false);
             PerformLayout();
@@ -102,5 +120,6 @@
         private Label label2;
         private TextBox textBox2;
         private Button button1;
+        private Button button2;
     }
 }

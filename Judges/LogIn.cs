@@ -17,6 +17,8 @@ namespace Judges
         }
 
         long userEx;
+        public string user;
+        public string pass;
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -28,10 +30,13 @@ namespace Judges
 
                 string sql = "SELECT COUNT(1) FROM users WHERE username = @user AND password = @pass";
 
+                user = textBox1.Text;
+                pass = textBox2.Text;
+
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("user", textBox1.Text);
-                    command.Parameters.AddWithValue("pass", textBox2.Text);
+                    command.Parameters.AddWithValue("user", user);
+                    command.Parameters.AddWithValue("pass", pass);
 
                     userEx = (long)command.ExecuteScalar();
                 }
@@ -40,7 +45,11 @@ namespace Judges
                 if (userEx > 0)
                 {
                     MessageBox.Show("Успешный вход!");
+
                     this.Close();
+
+                    MainForm mainform = new MainForm(user, pass);
+                    mainform.Show();
                 }
                 else
                 {
@@ -49,8 +58,10 @@ namespace Judges
             }
         }
 
-        private void LogIn_FormClosed(object sender, FormClosedEventArgs e)
+        private void button2_Click(object sender, EventArgs e)
         {
+            this.Close();
+
             Form1 form1 = new Form1();
             form1.Show();
         }

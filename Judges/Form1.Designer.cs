@@ -36,16 +36,17 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(185, 39);
+            label1.Font = new Font("Segoe UI", 21.75F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            label1.Location = new Point(11, 27);
             label1.Margin = new Padding(2, 0, 2, 0);
             label1.Name = "label1";
-            label1.Size = new Size(115, 15);
+            label1.Size = new Size(281, 40);
             label1.TabIndex = 0;
             label1.Text = "Добро пожаловать!";
             // 
             // button1
             // 
-            button1.Location = new Point(198, 80);
+            button1.Location = new Point(108, 91);
             button1.Margin = new Padding(2, 1, 2, 1);
             button1.Name = "button1";
             button1.Size = new Size(81, 22);
@@ -56,7 +57,7 @@
             // 
             // button2
             // 
-            button2.Location = new Point(191, 121);
+            button2.Location = new Point(99, 136);
             button2.Margin = new Padding(2, 1, 2, 1);
             button2.Name = "button2";
             button2.Size = new Size(99, 22);
@@ -69,13 +70,17 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(491, 278);
+            ClientSize = new Size(299, 215);
             Controls.Add(button2);
             Controls.Add(button1);
             Controls.Add(label1);
             Margin = new Padding(2, 1, 2, 1);
+            MaximizeBox = false;
+            MaximumSize = new Size(315, 254);
+            MinimumSize = new Size(315, 254);
             Name = "Form1";
-            Text = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Судебные дела";
             FormClosed += Form1_FormClosed;
             ResumeLayout(false);
             PerformLayout();
