@@ -2,7 +2,7 @@
 
 namespace Judges
 {
-    public partial class Form2 : Form
+    public partial class    Form2 : Form
     {
         public Form2()
         {
@@ -24,7 +24,18 @@ namespace Judges
                 {
                     connection.Open();
 
-                    string sql = "INSERT INTO users (username, password) VALUES (@user, @pass);";
+                    string sql = """
+                        INSERT INTO court_staff_roles (role_name, access_level, description)
+                        SELECT 'гость', 1, 'Просмотр судов и судей'
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM court_staff_roles WHERE role_name = 'гость'
+                        );
+
+                        INSERT INTO account (login, password, role_id)
+                        SELECT @user, @pass, role_id
+                        FROM court_staff_roles
+                        WHERE role_name = 'гость';
+                        """;
 
                     using (var command = new NpgsqlCommand(sql, connection))
                     {

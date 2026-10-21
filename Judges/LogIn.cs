@@ -9,7 +9,6 @@ namespace Judges
             InitializeComponent();
         }
 
-        long userEx;
         public string user;
         public string pass;
 
@@ -21,33 +20,129 @@ namespace Judges
             {
                 connection.Open();
 
-                string sql = "SELECT COUNT(1) FROM users WHERE username = @user AND password = @pass";
+                EnsureRoles(connection);
+                EnsureParticipantAccountLink(connection);
+                EnsureParticipantRequests(connection);
+
+                string sql = """
+                    SELECT COALESCE(csr.role_name, 'гость')
+                    FROM account a
+                    LEFT JOIN court_staff_roles csr ON csr.role_id = a.role_id
+                    WHERE a.login = @user AND a.password = @pass
+                    LIMIT 1
+                    """;
 
                 user = textBox1.Text;
                 pass = textBox2.Text;
 
+                string? roleName;
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("user", user);
                     command.Parameters.AddWithValue("pass", pass);
 
-                    userEx = (long)command.ExecuteScalar();
+                    roleName = command.ExecuteScalar() as string;
                 }
 
-
-                if (userEx > 0)
+                if (roleName != null)
                 {
                     MessageBox.Show("Успешный вход!");
 
                     this.Close();
 
-                    MainForm mainform = new MainForm(user, pass);
+                    MainForm mainform = new MainForm(user, pass, roleName);
                     mainform.Show();
                 }
                 else
                 {
                     MessageBox.Show("Учетная запись не найдена!");
                 }
+            }
+        }
+
+        private static void EnsureParticipantAccountLink(NpgsqlConnection connection)
+        {
+            const string sql = """
+                ALTER TABLE account
+                ADD COLUMN IF NOT EXISTS participant_id integer NULL;
+
+                ALTER TABLE account
+                ADD COLUMN IF NOT EXISTS court_id integer NULL;
+
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1
+                        FROM pg_constraint
+                        WHERE conname = 'account_participant_id_fkey'
+                    ) THEN
+                        ALTER TABLE account
+                        ADD CONSTRAINT account_participant_id_fkey
+                        FOREIGN KEY (participant_id) REFERENCES participants(participant_id);
+                    END IF;
+
+                    IF NOT EXISTS (
+                        SELECT 1
+                        FROM pg_constraint
+                        WHERE conname = 'account_court_id_fkey'
+                    ) THEN
+                        ALTER TABLE account
+                        ADD CONSTRAINT account_court_id_fkey
+                        FOREIGN KEY (court_id) REFERENCES courts(court_id);
+                    END IF;
+                END $$;
+                """;
+
+            using var command = new NpgsqlCommand(sql, connection);
+            command.ExecuteNonQuery();
+        }
+
+        private static void EnsureParticipantRequests(NpgsqlConnection connection)
+        {
+            const string sql = """
+                CREATE TABLE IF NOT EXISTS participant_requests (
+                    request_id serial PRIMARY KEY,
+                    login text NOT NULL,
+                    court_id integer NOT NULL REFERENCES courts(court_id),
+                    status text NOT NULL DEFAULT 'pending',
+                    participant_id integer NULL REFERENCES participants(participant_id),
+                    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                """;
+
+            using var command = new NpgsqlCommand(sql, connection);
+            command.ExecuteNonQuery();
+        }
+
+        private static void EnsureRoles(NpgsqlConnection connection)
+        {
+            const string sql = """
+                INSERT INTO court_staff_roles (role_name, access_level, description)
+                SELECT @role_name, @access_level, @description
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM court_staff_roles WHERE role_name = @role_name
+                );
+
+                UPDATE court_staff_roles
+                SET access_level = @access_level,
+                    description = @description
+                WHERE role_name = @role_name
+                """;
+
+            var roles = new[]
+            {
+                (Name: "гость", AccessLevel: 1, Description: "Просмотр судов и судей"),
+                (Name: "подсудимый", AccessLevel: 2, Description: "Просмотр судов и судей"),
+                (Name: "судья", AccessLevel: 3, Description: "Добавление судов и судей")
+            };
+
+            foreach (var role in roles)
+            {
+                using var command = new NpgsqlCommand(sql, connection);
+                command.Parameters.AddWithValue("role_name", role.Name);
+                command.Parameters.AddWithValue("access_level", role.AccessLevel);
+                command.Parameters.AddWithValue("description", role.Description);
+                command.ExecuteNonQuery();
             }
         }
 
