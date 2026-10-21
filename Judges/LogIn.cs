@@ -9,7 +9,6 @@ namespace Judges
             InitializeComponent();
         }
 
-        long userEx;
         public string user;
         public string pass;
 
@@ -21,33 +20,74 @@ namespace Judges
             {
                 connection.Open();
 
-                string sql = "SELECT COUNT(1) FROM users WHERE username = @user AND password = @pass";
+                EnsureRoles(connection);
+
+                string sql = """
+                    SELECT COALESCE(csr.role_name, 'гость')
+                    FROM account a
+                    LEFT JOIN court_staff_roles csr ON csr.role_id = a.role_id
+                    WHERE a.login = @user AND a.password = @pass
+                    LIMIT 1
+                    """;
 
                 user = textBox1.Text;
                 pass = textBox2.Text;
 
+                string? roleName;
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("user", user);
                     command.Parameters.AddWithValue("pass", pass);
 
-                    userEx = (long)command.ExecuteScalar();
+                    roleName = command.ExecuteScalar() as string;
                 }
 
 
-                if (userEx > 0)
+                if (roleName != null)
                 {
                     MessageBox.Show("Успешный вход!");
 
                     this.Close();
 
-                    MainForm mainform = new MainForm(user, pass);
+                    MainForm mainform = new MainForm(user, pass, roleName);
                     mainform.Show();
                 }
                 else
                 {
                     MessageBox.Show("Учетная запись не найдена!");
                 }
+            }
+        }
+
+        private static void EnsureRoles(NpgsqlConnection connection)
+        {
+            const string sql = """
+                INSERT INTO court_staff_roles (role_name, access_level, description)
+                SELECT @role_name, @access_level, @description
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM court_staff_roles WHERE role_name = @role_name
+                );
+
+                UPDATE court_staff_roles
+                SET access_level = @access_level,
+                    description = @description
+                WHERE role_name = @role_name
+                """;
+
+            var roles = new[]
+            {
+                (Name: "гость", AccessLevel: 1, Description: "Просмотр судов и судей"),
+                (Name: "подсудимый", AccessLevel: 2, Description: "Просмотр судов и судей"),
+                (Name: "судья", AccessLevel: 3, Description: "Добавление судов и судей")
+            };
+
+            foreach (var role in roles)
+            {
+                using var command = new NpgsqlCommand(sql, connection);
+                command.Parameters.AddWithValue("role_name", role.Name);
+                command.Parameters.AddWithValue("access_level", role.AccessLevel);
+                command.Parameters.AddWithValue("description", role.Description);
+                command.ExecuteNonQuery();
             }
         }
 
