@@ -104,7 +104,7 @@ namespace Judges
                            c.filling_date
                     FROM cases c
                     LEFT JOIN judges j ON j.judge_id = c.judge_id
-                     WHERE c.court_id = @court_id
+                    WHERE c.court_id = @court_id
                     ORDER BY c.filling_date DESC, c.case_number
                     """, connection);
                 command.Parameters.AddWithValue("court_id", courtId);
