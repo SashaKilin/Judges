@@ -131,11 +131,6 @@ namespace Judges
                 MessageBox.Show($"Не удалось загрузить статус заявки: {ex.Message}", "Ошибка базы данных", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Не удалось выполнить привязку: {ex.Message}", "Ошибка базы данных", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         private void LoadCourts()
         {
