@@ -82,6 +82,11 @@ namespace Judges
                 textBoxParticipantId.Text = "Заявка ожидает подтверждения судьёй";
                 MessageBox.Show("Заявка отправлена. После добавления в слушание участник и participant_id будут созданы автоматически.", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось выполнить привязку: {ex.Message}", "Ошибка базы данных", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
         private void LoadParticipantLinkStatus()
         {
