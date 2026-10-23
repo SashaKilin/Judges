@@ -212,5 +212,77 @@ namespace Judges
                 LoadCases();
             }
         }
+
+        private void buttonEditHearing_Click(object sender, EventArgs e)
+        {
+            if (selectedCaseId == null)
+            {
+                MessageBox.Show("Сначала выберите дело.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (selectedHearingId == null)
+            {
+                MessageBox.Show("Сначала выберите слушание.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using var hearingForm = new HearingAddForm(selectedCaseId, courtId, selectedHearingId);
+            if (hearingForm.ShowDialog(this) == DialogResult.OK)
+            {
+                LoadHearings();
+            }
+        }
+
+        private void buttonDeleteHearing_Click(object sender, EventArgs e)
+        {
+            if (selectedCaseId == null)
+            {
+                MessageBox.Show("Сначала выберите дело.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (selectedHearingId == null)
+            {
+                MessageBox.Show("Сначала выберите слушание.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "Удалить выбранное слушание?",
+                "Подтверждение",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (result != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                using var connection = new NpgsqlConnection(ConnectionString);
+                connection.Open();
+                using var command = new NpgsqlCommand("""
+                    DELETE FROM hearings
+                    WHERE hearing_id = @hearing_id AND case_id = @case_id
+                    """, connection);
+                command.Parameters.AddWithValue("hearing_id", selectedHearingId);
+                command.Parameters.AddWithValue("case_id", selectedCaseId);
+
+                if (command.ExecuteNonQuery() == 0)
+                {
+                    MessageBox.Show("Слушание уже удалено или не найдено.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                selectedHearingId = null;
+                LoadHearings();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось удалить слушание: {ex.Message}", "Ошибка базы данных", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

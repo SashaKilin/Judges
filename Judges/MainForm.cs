@@ -43,6 +43,8 @@ namespace Judges
             buttonLinkParticipant.Visible = !canEdit;
             buttonLinkParticipant.Enabled = !canEdit && selectedCourtId != null;
             buttonOpenCases.Location = canEdit ? new Point(1170, 220) : new Point(720, 166);
+            buttonReviewRequests.Visible = canEdit;
+            buttonReviewRequests.Enabled = canEdit && selectedCourtId != null;
             textBoxParticipantId.ReadOnly = true;
             LoadParticipantLinkStatus();
             LoadCourts();
@@ -188,6 +190,7 @@ namespace Judges
             labelJudges.Text = $"Судьи суда: {courtName}";
             buttonAddJudge.Enabled = canEdit;
             buttonOpenCases.Enabled = true;
+            buttonReviewRequests.Enabled = canEdit;
             buttonLinkParticipant.Enabled = !canEdit;
             LoadJudges();
         }
@@ -306,6 +309,19 @@ namespace Judges
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+        }
+
+        private void buttonReviewRequests_Click(object sender, EventArgs e)
+        {
+            if (!canEdit || selectedCourtId == null)
+            {
+                MessageBox.Show("Сначала выберите суд.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var courtName = dataGridViewCourts.CurrentRow?.Cells[1].Value?.ToString();
+            using var reviewForm = new ParticipantRequestReviewForm(selectedCourtId, courtName ?? "суд");
+            reviewForm.ShowDialog(this);
         }
 
         private void buttonAddCourt_Click(object sender, EventArgs e)
