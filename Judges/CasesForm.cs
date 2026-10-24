@@ -10,6 +10,8 @@ namespace Judges
         private readonly string courtName;
         private readonly string userName;
         private readonly bool canEdit;
+        private readonly bool canViewCases;
+        private readonly bool isDefendant;
         private object? selectedCaseId;
         private object? selectedHearingId;
 
@@ -20,18 +22,27 @@ namespace Judges
             this.courtName = courtName;
             this.userName = userName;
             canEdit = string.Equals(roleName, "судья", StringComparison.OrdinalIgnoreCase);
+            canViewCases = !string.Equals(roleName, "гость", StringComparison.OrdinalIgnoreCase);
+            isDefendant = string.Equals(roleName, "подсудимый", StringComparison.OrdinalIgnoreCase);
         }
 
         private void CasesForm_Load(object sender, EventArgs e)
         {
+            if (!canViewCases)
+            {
+                MessageBox.Show("Гость не имеет доступа к делам и слушаниям.", "Доступ ограничен", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Close();
+                return;
+            }
+
             labelTitle.Text = $"Дела суда: {courtName}";
-            buttonAddCase.Visible = true;
+            buttonAddCase.Visible = canEdit;
             buttonAddCase.Enabled = canEdit;
-            buttonAddHearing.Visible = true;
+            buttonAddHearing.Visible = canEdit;
             buttonAddHearing.Enabled = canEdit;
-            buttonEditHearing.Visible = true;
+            buttonEditHearing.Visible = canEdit;
             buttonEditHearing.Enabled = canEdit;
-            buttonDeleteHearing.Visible = true;
+            buttonDeleteHearing.Visible = canEdit;
             buttonDeleteHearing.Enabled = canEdit;
             EnsureFillingDateColumn();
             LoadCases();
@@ -89,25 +100,53 @@ namespace Judges
 
         private void LoadCases()
         {
+            if (!canViewCases)
+            {
+                dataGridViewCases.DataSource = new DataTable();
+                dataGridViewHearings.DataSource = new DataTable();
+                return;
+            }
+
             try
             {
                 using var connection = new NpgsqlConnection(ConnectionString);
                 connection.Open();
 
-                using var command = new NpgsqlCommand("""
-                    SELECT c.case_id,
-                           c.case_number,
-                           j.full_name AS judge_name,
-                           c.title,
-                           c.category,
-                           c.status,
-                           c.filling_date
-                    FROM cases c
-                    LEFT JOIN judges j ON j.judge_id = c.judge_id
-                    WHERE c.court_id = @court_id
-                    ORDER BY c.filling_date DESC, c.case_number
-                    """, connection);
+                using var command = isDefendant
+                    ? new NpgsqlCommand("""
+                        SELECT c.case_id,
+                               c.case_number,
+                               j.full_name AS judge_name,
+                               c.title,
+                               c.category,
+                               c.status,
+                               c.filling_date
+                        FROM cases c
+                        LEFT JOIN judges j ON j.judge_id = c.judge_id
+                        JOIN case_participants cp ON cp.case_id = c.case_id
+                        JOIN account a ON a.participant_id = cp.participant_id
+                        WHERE c.court_id = @court_id
+                          AND a.login = @login
+                        ORDER BY c.filling_date DESC, c.case_number
+                        """, connection)
+                    : new NpgsqlCommand("""
+                        SELECT c.case_id,
+                               c.case_number,
+                               j.full_name AS judge_name,
+                               c.title,
+                               c.category,
+                               c.status,
+                               c.filling_date
+                        FROM cases c
+                        LEFT JOIN judges j ON j.judge_id = c.judge_id
+                        WHERE c.court_id = @court_id
+                        ORDER BY c.filling_date DESC, c.case_number
+                        """, connection);
                 command.Parameters.AddWithValue("court_id", courtId);
+                if (isDefendant)
+                {
+                    command.Parameters.AddWithValue("login", userName);
+                }
 
                 using var reader = command.ExecuteReader();
                 var cases = new DataTable();
@@ -154,8 +193,9 @@ namespace Judges
 
         private void LoadHearings()
         {
-            if (selectedCaseId == null)
+            if (!canViewCases || selectedCaseId == null)
             {
+                dataGridViewHearings.DataSource = new DataTable();
                 return;
             }
 
@@ -163,13 +203,31 @@ namespace Judges
             {
                 using var connection = new NpgsqlConnection(ConnectionString);
                 connection.Open();
-                using var command = new NpgsqlCommand("""
-                    SELECT hearing_id, hearing_date, room_number, result_summary
-                    FROM hearings
-                    WHERE case_id = @case_id
-                    ORDER BY hearing_date
-                    """, connection);
+                using var command = isDefendant
+                    ? new NpgsqlCommand("""
+                        SELECT h.hearing_id, h.hearing_date, h.room_number, h.result_summary
+                        FROM hearings h
+                        WHERE h.case_id = @case_id
+                          AND EXISTS (
+                              SELECT 1
+                              FROM case_participants cp
+                              JOIN account a ON a.participant_id = cp.participant_id
+                              WHERE cp.case_id = h.case_id
+                                AND a.login = @login
+                          )
+                        ORDER BY h.hearing_date
+                        """, connection)
+                    : new NpgsqlCommand("""
+                        SELECT hearing_id, hearing_date, room_number, result_summary
+                        FROM hearings
+                        WHERE case_id = @case_id
+                        ORDER BY hearing_date
+                        """, connection);
                 command.Parameters.AddWithValue("case_id", selectedCaseId);
+                if (isDefendant)
+                {
+                    command.Parameters.AddWithValue("login", userName);
+                }
                 using var reader = command.ExecuteReader();
                 var hearings = new DataTable();
                 hearings.Load(reader);

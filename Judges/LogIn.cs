@@ -22,7 +22,8 @@ namespace Judges
 
                 EnsureRoles(connection);
                 EnsureParticipantAccountLink(connection);
-                EnsureParticipantRequests(connection);
+                EnsureParticipants(connection);
+                EnsureCaseParticipants(connection);
 
                 string sql = """
                     SELECT COALESCE(csr.role_name, 'гость')
@@ -97,16 +98,29 @@ namespace Judges
             command.ExecuteNonQuery();
         }
 
-        private static void EnsureParticipantRequests(NpgsqlConnection connection)
+        private static void EnsureParticipants(NpgsqlConnection connection)
         {
             const string sql = """
-                CREATE TABLE IF NOT EXISTS participant_requests (
-                    request_id serial PRIMARY KEY,
-                    login text NOT NULL,
-                    court_id integer NOT NULL REFERENCES courts(court_id),
-                    status text NOT NULL DEFAULT 'pending',
-                    participant_id integer NULL REFERENCES participants(participant_id),
-                    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+                CREATE TABLE IF NOT EXISTS participants (
+                    participant_id serial PRIMARY KEY,
+                    full_name text NOT NULL,
+                    type text NOT NULL DEFAULT 'подсудимый',
+                    phone text NOT NULL DEFAULT '',
+                    email text NOT NULL DEFAULT ''
+                );
+                """;
+
+            using var command = new NpgsqlCommand(sql, connection);
+            command.ExecuteNonQuery();
+        }
+
+        private static void EnsureCaseParticipants(NpgsqlConnection connection)
+        {
+            const string sql = """
+                CREATE TABLE IF NOT EXISTS case_participants (
+                    case_id integer NOT NULL REFERENCES cases(case_id),
+                    participant_id integer NOT NULL REFERENCES participants(participant_id),
+                    PRIMARY KEY (case_id, participant_id)
                 );
                 """;
 

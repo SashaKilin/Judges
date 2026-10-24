@@ -9,7 +9,9 @@ namespace Judges
         private string user1;
         private string pass2;
         private string roleName;
+        private readonly int accessLevel;
         private bool canEdit;
+        private bool canViewCases;
         private object? selectedCourtId;
 
         public MainForm(string user, string pass, string roleName)
@@ -19,6 +21,27 @@ namespace Judges
             this.user1 = user;
             this.pass2 = pass;
             this.roleName = roleName;
+            accessLevel = GetAccessLevel(roleName);
+        }
+
+        private static int GetAccessLevel(string roleName)
+        {
+            if (string.Equals(roleName, "гость", StringComparison.OrdinalIgnoreCase))
+            {
+                return 1;
+            }
+
+            if (string.Equals(roleName, "подсудимый", StringComparison.OrdinalIgnoreCase))
+            {
+                return 2;
+            }
+
+            if (string.Equals(roleName, "судья", StringComparison.OrdinalIgnoreCase))
+            {
+                return 3;
+            }
+
+            return 1;
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -28,7 +51,8 @@ namespace Judges
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            canEdit = string.Equals(roleName, "судья", StringComparison.OrdinalIgnoreCase);
+            canEdit = accessLevel == 3;
+            canViewCases = accessLevel > 1;
             label1.Text = $"Добро пожаловать, {user1}! Роль: {roleName}";
 
             labelName.Visible = canEdit;
@@ -38,105 +62,10 @@ namespace Judges
             labelType.Visible = canEdit;
             textBoxType.Visible = canEdit;
             buttonAddCourt.Visible = canEdit;
-            labelParticipantId.Visible = !canEdit;
-            textBoxParticipantId.Visible = !canEdit;
-            buttonLinkParticipant.Visible = !canEdit;
-            buttonLinkParticipant.Enabled = !canEdit && selectedCourtId != null;
+            buttonOpenCases.Visible = canViewCases;
+            buttonOpenCases.Enabled = canViewCases;
             buttonOpenCases.Location = canEdit ? new Point(1170, 220) : new Point(720, 166);
-            buttonReviewRequests.Visible = canEdit;
-            buttonReviewRequests.Enabled = canEdit && selectedCourtId != null;
-            textBoxParticipantId.ReadOnly = true;
-            LoadParticipantLinkStatus();
             LoadCourts();
-        }
-
-        private void buttonLinkParticipant_Click(object sender, EventArgs e)
-        {
-            if (selectedCourtId == null)
-            {
-                MessageBox.Show("Сначала выберите суд.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            try
-            {
-                using var connection = new NpgsqlConnection(ConnectionString);
-                connection.Open();
-                using var command = new NpgsqlCommand("""
-                    INSERT INTO participant_requests (login, court_id)
-                    SELECT @login, @court_id
-                    WHERE NOT EXISTS (
-                        SELECT 1
-                        FROM participant_requests
-                        WHERE login = @login AND court_id = @court_id AND status = 'pending'
-                    )
-                    """, connection);
-                command.Parameters.AddWithValue("login", user1);
-                command.Parameters.AddWithValue("court_id", selectedCourtId!);
-
-                if (command.ExecuteNonQuery() == 0)
-                {
-                    MessageBox.Show("Заявка на этот суд уже ожидает подтверждения.", "Привязка к суду", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                buttonLinkParticipant.Enabled = false;
-                textBoxParticipantId.Text = "Заявка ожидает подтверждения судьёй";
-                MessageBox.Show("Заявка отправлена. После добавления в слушание участник и participant_id будут созданы автоматически.", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Не удалось выполнить привязку: {ex.Message}", "Ошибка базы данных", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void LoadParticipantLinkStatus()
-        {
-            if (canEdit)
-            {
-                return;
-            }
-
-            try
-            {
-                using var connection = new NpgsqlConnection(ConnectionString);
-                connection.Open();
-                using var command = new NpgsqlCommand("""
-                    SELECT a.participant_id,
-                           EXISTS (
-                               SELECT 1 FROM participant_requests pr
-                               WHERE pr.login = a.login AND pr.status = 'pending'
-                           ) AS has_pending_request
-                    FROM account a
-                    WHERE a.login = @login
-                    """, connection);
-                command.Parameters.AddWithValue("login", user1);
-                using var reader = command.ExecuteReader();
-
-                if (!reader.Read())
-                {
-                    return;
-                }
-
-                if (!reader.IsDBNull(0))
-                {
-                    textBoxParticipantId.Text = $"Ваш participant_id: {reader.GetInt32(0)}";
-                    buttonLinkParticipant.Visible = false;
-                }
-                else if (reader.GetBoolean(1))
-                {
-                    textBoxParticipantId.Text = "Заявка ожидает подтверждения судьёй";
-                    buttonLinkParticipant.Enabled = false;
-                }
-                else
-                {
-                    textBoxParticipantId.Text = "Сначала выберите суд";
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Не удалось загрузить статус заявки: {ex.Message}", "Ошибка базы данных", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
 
         private void LoadCourts()
@@ -146,8 +75,21 @@ namespace Judges
                 using var connection = new NpgsqlConnection(ConnectionString);
                 connection.Open();
 
-                using var command = new NpgsqlCommand(
-                    "SELECT court_id, name, address, type FROM courts ORDER BY name", connection);
+                using var command = accessLevel == 2
+                    ? new NpgsqlCommand("""
+                        SELECT DISTINCT c.court_id, c.name, c.address, c.type
+                        FROM courts c
+                        JOIN cases cs ON cs.court_id = c.court_id
+                        JOIN case_participants cp ON cp.case_id = cs.case_id
+                        JOIN account a ON a.participant_id = cp.participant_id
+                        WHERE a.login = @login
+                        ORDER BY c.name
+                        """, connection)
+                    : new NpgsqlCommand("SELECT court_id, name, address, type FROM courts ORDER BY name", connection);
+                if (accessLevel == 2)
+                {
+                    command.Parameters.AddWithValue("login", user1);
+                }
                 using var reader = command.ExecuteReader();
 
                 var courts = new DataTable();
@@ -189,9 +131,7 @@ namespace Judges
             var courtName = dataGridViewCourts.Rows[e.RowIndex].Cells[1].Value?.ToString();
             labelJudges.Text = $"Судьи суда: {courtName}";
             buttonAddJudge.Enabled = canEdit;
-            buttonOpenCases.Enabled = true;
-            buttonReviewRequests.Enabled = canEdit;
-            buttonLinkParticipant.Enabled = !canEdit;
+            buttonOpenCases.Enabled = canViewCases;
             LoadJudges();
         }
 
@@ -199,6 +139,12 @@ namespace Judges
         {
             if (e.RowIndex < 0 || e.RowIndex >= dataGridViewCourts.Rows.Count)
             {
+                return;
+            }
+
+            if (accessLevel == 1)
+            {
+                MessageBox.Show("Гость не имеет доступа к делам и слушаниям.", "Доступ ограничен", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -216,6 +162,12 @@ namespace Judges
 
         private void buttonOpenCases_Click(object sender, EventArgs e)
         {
+            if (accessLevel == 1)
+            {
+                MessageBox.Show("Гость не имеет доступа к делам и слушаниям.", "Доступ ограничен", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             if (selectedCourtId == null)
             {
                 MessageBox.Show("Сначала выберите суд.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -309,19 +261,6 @@ namespace Judges
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
-        }
-
-        private void buttonReviewRequests_Click(object sender, EventArgs e)
-        {
-            if (!canEdit || selectedCourtId == null)
-            {
-                MessageBox.Show("Сначала выберите суд.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            var courtName = dataGridViewCourts.CurrentRow?.Cells[1].Value?.ToString();
-            using var reviewForm = new ParticipantRequestReviewForm(selectedCourtId, courtName ?? "суд");
-            reviewForm.ShowDialog(this);
         }
 
         private void buttonAddCourt_Click(object sender, EventArgs e)

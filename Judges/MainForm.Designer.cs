@@ -40,11 +40,7 @@
             labelJudges = new Label();
             dataGridViewJudges = new DataGridView();
             buttonAddJudge = new Button();
-            labelParticipantId = new Label();
-            textBoxParticipantId = new TextBox();
-            buttonLinkParticipant = new Button();
             buttonOpenCases = new Button();
-            buttonReviewRequests = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridViewCourts).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewJudges).BeginInit();
             SuspendLayout();
@@ -165,42 +161,15 @@
             buttonAddJudge.Text = "Внести нового судью";
             buttonAddJudge.UseVisualStyleBackColor = true;
             buttonAddJudge.Click += buttonAddJudge_Click;
-            // labelParticipantId
-            labelParticipantId.AutoSize = true;
-            labelParticipantId.Location = new Point(35, 135);
-            labelParticipantId.Name = "labelParticipantId";
-            labelParticipantId.Size = new Size(180, 32);
-            labelParticipantId.Text = "Привязка к суду";
-            // textBoxParticipantId
-            textBoxParticipantId.Location = new Point(35, 170);
-            textBoxParticipantId.Name = "textBoxParticipantId";
-            textBoxParticipantId.Size = new Size(300, 39);
-            // buttonLinkParticipant
-            buttonLinkParticipant.Location = new Point(390, 166);
-            buttonLinkParticipant.Name = "buttonLinkParticipant";
-            buttonLinkParticipant.Size = new Size(300, 55);
-            buttonLinkParticipant.TabIndex = 14;
-            buttonLinkParticipant.Text = "Подать заявку на привязку";
-            buttonLinkParticipant.UseVisualStyleBackColor = true;
-            buttonLinkParticipant.Click += buttonLinkParticipant_Click;
             // buttonOpenCases
             buttonOpenCases.Enabled = false;
             buttonOpenCases.Location = new Point(720, 166);
             buttonOpenCases.Name = "buttonOpenCases";
             buttonOpenCases.Size = new Size(300, 55);
-            buttonOpenCases.TabIndex = 15;
+            buttonOpenCases.TabIndex = 14;
             buttonOpenCases.Text = "Открыть дела суда";
             buttonOpenCases.UseVisualStyleBackColor = true;
             buttonOpenCases.Click += buttonOpenCases_Click;
-            // buttonReviewRequests
-            buttonReviewRequests.Enabled = false;
-            buttonReviewRequests.Location = new Point(1210, 720);
-            buttonReviewRequests.Name = "buttonReviewRequests";
-            buttonReviewRequests.Size = new Size(300, 55);
-            buttonReviewRequests.TabIndex = 16;
-            buttonReviewRequests.Text = "Заявки на привязку";
-            buttonReviewRequests.UseVisualStyleBackColor = true;
-            buttonReviewRequests.Click += buttonReviewRequests_Click;
             // 
             // MainForm
             // 
@@ -209,11 +178,7 @@
             ClientSize = new Size(1600, 900);
             Controls.Add(dataGridViewCourts);
             Controls.Add(buttonAddJudge);
-            Controls.Add(buttonLinkParticipant);
-            Controls.Add(textBoxParticipantId);
-            Controls.Add(labelParticipantId);
             Controls.Add(buttonOpenCases);
-            Controls.Add(buttonReviewRequests);
             Controls.Add(dataGridViewJudges);
             Controls.Add(labelJudges);
             Controls.Add(buttonAddCourt);
@@ -250,10 +215,6 @@
         private Label labelJudges;
         private DataGridView dataGridViewJudges;
         private Button buttonAddJudge;
-        private Label labelParticipantId;
-        private TextBox textBoxParticipantId;
-        private Button buttonLinkParticipant;
         private Button buttonOpenCases;
-        private Button buttonReviewRequests;
     }
 }

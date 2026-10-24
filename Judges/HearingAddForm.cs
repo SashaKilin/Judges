@@ -68,22 +68,12 @@ namespace Judges
                 connection.Open();
                 using var command = new NpgsqlCommand(
                     """
-                    SELECT DISTINCT p.participant_id, p.full_name, p.type, p.phone, p.email,
-                                    0 AS request_id, '' AS request_login
-                    FROM participants p
-                    JOIN account a ON a.participant_id = p.participant_id
-                    WHERE a.court_id = @court_id
-                    UNION ALL
-                    SELECT NULL::integer AS participant_id,
-                           'Заявка: ' || pr.login AS full_name,
-                           'ожидает подтверждения' AS type,
-                           '' AS phone,
-                           '' AS email,
-                           pr.request_id,
-                           pr.login
-                    FROM participant_requests pr
-                    WHERE pr.court_id = @court_id AND pr.status = 'pending'
-                    ORDER BY full_name
+                    SELECT p.participant_id, p.full_name, p.type, p.phone, p.email
+                    FROM case_participants cp
+                    JOIN participants p ON p.participant_id = cp.participant_id
+                    JOIN cases c ON c.case_id = cp.case_id
+                    WHERE c.court_id = @court_id
+                    ORDER BY p.full_name
                     """,
                     connection);
                 command.Parameters.AddWithValue("court_id", courtId);
@@ -147,36 +137,9 @@ namespace Judges
                         }
 
                         var participantId = row["participant_id"];
-                        if (participantId == DBNull.Value)
+                        if (participantId == null || participantId == DBNull.Value)
                         {
-                            using var createParticipantCommand = new NpgsqlCommand("""
-                            INSERT INTO participants (full_name, type, phone, email)
-                            VALUES (@full_name, 'подсудимый', '', '')
-                            RETURNING participant_id
-                            """, connection, transaction);
-                            createParticipantCommand.Parameters.AddWithValue("full_name", row["request_login"]);
-                            participantId = createParticipantCommand.ExecuteScalar()!;
-
-                            using var accountCommand = new NpgsqlCommand("""
-                            UPDATE account
-                            SET participant_id = @participant_id,
-                                court_id = @court_id,
-                                role_id = (SELECT role_id FROM court_staff_roles WHERE role_name = 'подсудимый')
-                            WHERE login = @login
-                            """, connection, transaction);
-                            accountCommand.Parameters.AddWithValue("participant_id", participantId);
-                            accountCommand.Parameters.AddWithValue("court_id", courtId);
-                            accountCommand.Parameters.AddWithValue("login", row["request_login"]);
-                            accountCommand.ExecuteNonQuery();
-
-                            using var requestCommand = new NpgsqlCommand("""
-                            UPDATE participant_requests
-                            SET status = 'confirmed', participant_id = @participant_id
-                            WHERE request_id = @request_id
-                            """, connection, transaction);
-                            requestCommand.Parameters.AddWithValue("participant_id", participantId);
-                            requestCommand.Parameters.AddWithValue("request_id", row["request_id"]);
-                            requestCommand.ExecuteNonQuery();
+                            continue;
                         }
 
                         using var participantCommand = new NpgsqlCommand("""

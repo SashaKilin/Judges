@@ -23,9 +23,18 @@ namespace Judges
         private object? SelectedJudgeId =>
             (comboBoxJudge.SelectedItem as DataRowView)?["judge_id"];
 
+        private object? SelectedDefendantParticipantId =>
+            (comboBoxDefendant.SelectedItem as DataRowView)?["participant_id"];
+
         private void CaseAddForm_Load(object sender, EventArgs e)
         {
             LoadJudges();
+            LoadDefendants();
+        }
+
+        private void UpdateSaveAvailability()
+        {
+            buttonSave.Enabled = comboBoxJudge.Items.Count > 0 && comboBoxDefendant.Items.Count > 0;
         }
 
         private void LoadJudges()
@@ -47,12 +56,8 @@ namespace Judges
                 comboBoxJudge.DataSource = judges;
                 comboBoxJudge.DisplayMember = "full_name";
                 comboBoxJudge.ValueMember = "judge_id";
-                buttonSave.Enabled = judges.Rows.Count > 0;
-
-                if (judges.Rows.Count == 0)
-                {
-                    labelNoJudges.Visible = true;
-                }
+                labelNoJudges.Visible = judges.Rows.Count == 0;
+                UpdateSaveAvailability();
             }
             catch (Exception ex)
             {
@@ -65,16 +70,53 @@ namespace Judges
             }
         }
 
+        private void LoadDefendants()
+        {
+            try
+            {
+                using var connection = new NpgsqlConnection(ConnectionString);
+                connection.Open();
+
+                using var command = new NpgsqlCommand("""
+                    SELECT a.participant_id,
+                           COALESCE(p.full_name, a.login) AS full_name,
+                           a.login
+                    FROM account a
+                    LEFT JOIN participants p ON p.participant_id = a.participant_id
+                    ORDER BY COALESCE(p.full_name, a.login), a.login
+                    """, connection);
+
+                using var reader = command.ExecuteReader();
+                var defendants = new DataTable();
+                defendants.Load(reader);
+
+                comboBoxDefendant.DataSource = defendants;
+                comboBoxDefendant.DisplayMember = "full_name";
+                comboBoxDefendant.ValueMember = "participant_id";
+                UpdateSaveAvailability();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Не удалось загрузить подсудимых: {ex.Message}",
+                    "Ошибка базы данных",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                buttonSave.Enabled = false;
+            }
+        }
+
         private void buttonSave_Click(object sender, EventArgs e)
         {
             if (SelectedJudgeId == null ||
+                SelectedDefendantParticipantId == null ||
                 string.IsNullOrWhiteSpace(CaseNumber) ||
                 string.IsNullOrWhiteSpace(Title) ||
                 string.IsNullOrWhiteSpace(Category) ||
                 string.IsNullOrWhiteSpace(Status))
             {
                 MessageBox.Show(
-                    "Заполните все поля и выберите судью.",
+                    "Заполните все поля и выберите судью и подсудимого.",
                     "Проверка данных",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
@@ -85,6 +127,34 @@ namespace Judges
             {
                 using var connection = new NpgsqlConnection(ConnectionString);
                 connection.Open();
+
+                var selectedLogin = (comboBoxDefendant.SelectedItem as DataRowView)?["login"]?.ToString();
+                if (string.IsNullOrWhiteSpace(selectedLogin))
+                {
+                    throw new InvalidOperationException("Не удалось определить аккаунт подсудимого.");
+                }
+
+                object? defendantParticipantId = SelectedDefendantParticipantId;
+                if (defendantParticipantId == null || defendantParticipantId == DBNull.Value)
+                {
+                    using var createParticipantCommand = new NpgsqlCommand("""
+                        INSERT INTO participants (full_name, type, phone, email)
+                        VALUES (@full_name, 'подсудимый', '', '')
+                        RETURNING participant_id
+                        """, connection);
+                    createParticipantCommand.Parameters.AddWithValue("full_name", selectedLogin);
+                    defendantParticipantId = createParticipantCommand.ExecuteScalar();
+
+                    using var updateAccountCommand = new NpgsqlCommand("""
+                        UPDATE account
+                        SET participant_id = @participant_id,
+                            role_id = (SELECT role_id FROM court_staff_roles WHERE role_name = 'подсудимый')
+                        WHERE login = @login
+                        """, connection);
+                    updateAccountCommand.Parameters.AddWithValue("participant_id", defendantParticipantId);
+                    updateAccountCommand.Parameters.AddWithValue("login", selectedLogin);
+                    updateAccountCommand.ExecuteNonQuery();
+                }
 
                 using var command = new NpgsqlCommand("""
                     INSERT INTO cases
@@ -101,6 +171,21 @@ namespace Judges
                 command.Parameters.AddWithValue("status", Status);
                 command.Parameters.AddWithValue("filling_date", FillingDate);
                 var caseId = command.ExecuteScalar();
+
+                if (caseId != null && caseId != DBNull.Value)
+                {
+                    using var participantCommand = new NpgsqlCommand("""
+                        INSERT INTO case_participants (case_id, participant_id)
+                        SELECT @case_id, @participant_id
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM case_participants
+                            WHERE case_id = @case_id AND participant_id = @participant_id
+                        )
+                        """, connection);
+                    participantCommand.Parameters.AddWithValue("case_id", caseId);
+                    participantCommand.Parameters.AddWithValue("participant_id", defendantParticipantId);
+                    participantCommand.ExecuteNonQuery();
+                }
 
                 if (caseId != null && caseId != DBNull.Value &&
                     MessageBox.Show(

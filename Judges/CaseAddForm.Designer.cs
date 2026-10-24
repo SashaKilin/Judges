@@ -19,6 +19,8 @@ namespace Judges
             textBoxCaseNumber = new TextBox();
             labelJudge = new Label();
             comboBoxJudge = new ComboBox();
+            labelDefendant = new Label();
+            comboBoxDefendant = new ComboBox();
             labelTitle = new Label();
             textBoxTitle = new TextBox();
             labelCategory = new Label();
@@ -66,78 +68,96 @@ namespace Judges
             comboBoxJudge.Size = new Size(350, 23);
             comboBoxJudge.TabIndex = 3;
             // 
+            // labelDefendant
+            // 
+            labelDefendant.AutoSize = true;
+            labelDefendant.Location = new Point(25, 130);
+            labelDefendant.Name = "labelDefendant";
+            labelDefendant.Size = new Size(90, 15);
+            labelDefendant.TabIndex = 4;
+            labelDefendant.Text = "Подсудимый";
+            // 
+            // comboBoxDefendant
+            // 
+            comboBoxDefendant.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxDefendant.FormattingEnabled = true;
+            comboBoxDefendant.Location = new Point(25, 148);
+            comboBoxDefendant.Name = "comboBoxDefendant";
+            comboBoxDefendant.Size = new Size(350, 23);
+            comboBoxDefendant.TabIndex = 5;
+            // 
             // labelTitle
             // 
             labelTitle.AutoSize = true;
-            labelTitle.Location = new Point(25, 130);
+            labelTitle.Location = new Point(25, 185);
             labelTitle.Name = "labelTitle";
             labelTitle.Size = new Size(63, 15);
-            labelTitle.TabIndex = 4;
+            labelTitle.TabIndex = 6;
             labelTitle.Text = "Название";
             // 
             // textBoxTitle
             // 
-            textBoxTitle.Location = new Point(25, 148);
+            textBoxTitle.Location = new Point(25, 203);
             textBoxTitle.Name = "textBoxTitle";
             textBoxTitle.Size = new Size(350, 23);
-            textBoxTitle.TabIndex = 5;
+            textBoxTitle.TabIndex = 7;
             // 
             // labelCategory
             // 
             labelCategory.AutoSize = true;
-            labelCategory.Location = new Point(25, 185);
+            labelCategory.Location = new Point(25, 240);
             labelCategory.Name = "labelCategory";
             labelCategory.Size = new Size(69, 15);
-            labelCategory.TabIndex = 6;
+            labelCategory.TabIndex = 8;
             labelCategory.Text = "Категория";
             // 
             // textBoxCategory
             // 
-            textBoxCategory.Location = new Point(25, 203);
+            textBoxCategory.Location = new Point(25, 258);
             textBoxCategory.Name = "textBoxCategory";
             textBoxCategory.Size = new Size(350, 23);
-            textBoxCategory.TabIndex = 7;
+            textBoxCategory.TabIndex = 9;
             // 
             // labelStatus
             // 
             labelStatus.AutoSize = true;
-            labelStatus.Location = new Point(25, 240);
+            labelStatus.Location = new Point(25, 295);
             labelStatus.Name = "labelStatus";
             labelStatus.Size = new Size(47, 15);
-            labelStatus.TabIndex = 8;
+            labelStatus.TabIndex = 10;
             labelStatus.Text = "Статус";
             // 
             // textBoxStatus
             // 
-            textBoxStatus.Location = new Point(25, 258);
+            textBoxStatus.Location = new Point(25, 313);
             textBoxStatus.Name = "textBoxStatus";
             textBoxStatus.Size = new Size(350, 23);
-            textBoxStatus.TabIndex = 9;
+            textBoxStatus.TabIndex = 11;
             textBoxStatus.Text = "Новое";
             // 
             // labelFillingDate
             // 
             labelFillingDate.AutoSize = true;
-            labelFillingDate.Location = new Point(25, 295);
+            labelFillingDate.Location = new Point(25, 350);
             labelFillingDate.Name = "labelFillingDate";
             labelFillingDate.Size = new Size(78, 15);
-            labelFillingDate.TabIndex = 10;
+            labelFillingDate.TabIndex = 12;
             labelFillingDate.Text = "Дата подачи";
             // 
             // dateTimePickerFillingDate
             // 
             dateTimePickerFillingDate.Format = DateTimePickerFormat.Short;
-            dateTimePickerFillingDate.Location = new Point(25, 313);
+            dateTimePickerFillingDate.Location = new Point(25, 368);
             dateTimePickerFillingDate.Name = "dateTimePickerFillingDate";
             dateTimePickerFillingDate.Size = new Size(350, 23);
-            dateTimePickerFillingDate.TabIndex = 11;
+            dateTimePickerFillingDate.TabIndex = 13;
             // 
             // buttonSave
             // 
-            buttonSave.Location = new Point(25, 365);
+            buttonSave.Location = new Point(25, 420);
             buttonSave.Name = "buttonSave";
             buttonSave.Size = new Size(165, 32);
-            buttonSave.TabIndex = 12;
+            buttonSave.TabIndex = 14;
             buttonSave.Text = "Сохранить";
             buttonSave.UseVisualStyleBackColor = true;
             buttonSave.Click += buttonSave_Click;
@@ -145,10 +165,10 @@ namespace Judges
             // buttonCancel
             // 
             buttonCancel.DialogResult = DialogResult.Cancel;
-            buttonCancel.Location = new Point(210, 365);
+            buttonCancel.Location = new Point(210, 420);
             buttonCancel.Name = "buttonCancel";
             buttonCancel.Size = new Size(165, 32);
-            buttonCancel.TabIndex = 13;
+            buttonCancel.TabIndex = 15;
             buttonCancel.Text = "Отмена";
             buttonCancel.UseVisualStyleBackColor = true;
             // 
@@ -156,10 +176,10 @@ namespace Judges
             // 
             labelNoJudges.AutoSize = true;
             labelNoJudges.ForeColor = Color.Firebrick;
-            labelNoJudges.Location = new Point(25, 340);
+            labelNoJudges.Location = new Point(25, 395);
             labelNoJudges.Name = "labelNoJudges";
             labelNoJudges.Size = new Size(350, 15);
-            labelNoJudges.TabIndex = 14;
+            labelNoJudges.TabIndex = 16;
             labelNoJudges.Text = "Сначала добавьте судью в выбранный суд";
             labelNoJudges.Visible = false;
             // 
@@ -169,7 +189,7 @@ namespace Judges
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             CancelButton = buttonCancel;
-            ClientSize = new Size(400, 425);
+            ClientSize = new Size(400, 480);
             Controls.Add(labelNoJudges);
             Controls.Add(buttonCancel);
             Controls.Add(buttonSave);
@@ -181,6 +201,8 @@ namespace Judges
             Controls.Add(labelCategory);
             Controls.Add(textBoxTitle);
             Controls.Add(labelTitle);
+            Controls.Add(comboBoxDefendant);
+            Controls.Add(labelDefendant);
             Controls.Add(comboBoxJudge);
             Controls.Add(labelJudge);
             Controls.Add(textBoxCaseNumber);
@@ -200,6 +222,8 @@ namespace Judges
         private TextBox textBoxCaseNumber;
         private Label labelJudge;
         private ComboBox comboBoxJudge;
+        private Label labelDefendant;
+        private ComboBox comboBoxDefendant;
         private Label labelTitle;
         private TextBox textBoxTitle;
         private Label labelCategory;
