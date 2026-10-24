@@ -1,9 +1,11 @@
 using System.Data;
 using Npgsql;
+using MaterialSkin.Controls;
+using MaterialSkin;
 
 namespace Judges
 {
-    public partial class CaseAddForm : Form
+    public partial class CaseAddForm : MaterialForm
     {
         private const string ConnectionString = "Host=localhost;Username=postgres;Password=pass;Database=postgres";
         private readonly object courtId;
@@ -12,6 +14,13 @@ namespace Judges
         {
             InitializeComponent();
             this.courtId = courtId;
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.BlueGrey800, Primary.BlueGrey900,
+                Primary.BlueGrey500, Accent.LightBlue200,
+                TextShade.WHITE);
         }
 
         public string CaseNumber => textBoxCaseNumber.Text.Trim();

@@ -1,4 +1,7 @@
-﻿namespace Judges
+﻿using MaterialSkin.Controls;
+using MaterialSkin;
+
+namespace Judges
 {
     partial class Form1
     {
@@ -28,56 +31,73 @@
         /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
-            button1 = new Button();
-            button2 = new Button();
+            button1 = new MaterialButton();
+            button2 = new MaterialButton();
+            materialLabel1 = new MaterialLabel();
             SuspendLayout();
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 21.75F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            label1.Location = new Point(11, 27);
-            label1.Margin = new Padding(2, 0, 2, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(281, 40);
-            label1.TabIndex = 0;
-            label1.Text = "Добро пожаловать!";
             // 
             // button1
             // 
-            button1.Location = new Point(108, 91);
+            button1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            button1.Density = MaterialButton.MaterialButtonDensity.Default;
+            button1.Depth = 0;
+            button1.HighEmphasis = true;
+            button1.Icon = null;
+            button1.Location = new Point(118, 132);
             button1.Margin = new Padding(2, 1, 2, 1);
+            button1.MouseState = MouseState.HOVER;
             button1.Name = "button1";
-            button1.Size = new Size(81, 22);
+            button1.NoAccentTextColor = Color.Empty;
+            button1.Size = new Size(71, 36);
             button1.TabIndex = 1;
             button1.Text = "Войти";
+            button1.Type = MaterialButton.MaterialButtonType.Contained;
+            button1.UseAccentColor = false;
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
             // 
             // button2
             // 
-            button2.Location = new Point(99, 136);
+            button2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            button2.Density = MaterialButton.MaterialButtonDensity.Default;
+            button2.Depth = 0;
+            button2.HighEmphasis = true;
+            button2.Icon = null;
+            button2.Location = new Point(93, 179);
             button2.Margin = new Padding(2, 1, 2, 1);
+            button2.MouseState = MouseState.HOVER;
             button2.Name = "button2";
-            button2.Size = new Size(99, 22);
+            button2.NoAccentTextColor = Color.Empty;
+            button2.Size = new Size(126, 36);
             button2.TabIndex = 2;
             button2.Text = "Регистрация";
+            button2.Type = MaterialButton.MaterialButtonType.Outlined;
+            button2.UseAccentColor = false;
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
+            // 
+            // materialLabel1
+            // 
+            materialLabel1.AutoSize = true;
+            materialLabel1.Depth = 0;
+            materialLabel1.Font = new Font("Roboto", 14F, FontStyle.Regular, GraphicsUnit.Pixel);
+            materialLabel1.Location = new Point(82, 92);
+            materialLabel1.MouseState = MouseState.HOVER;
+            materialLabel1.Name = "materialLabel1";
+            materialLabel1.Size = new Size(149, 19);
+            materialLabel1.TabIndex = 3;
+            materialLabel1.Text = "Добро пожаловать!";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(299, 215);
+            ClientSize = new Size(327, 264);
+            Controls.Add(materialLabel1);
             Controls.Add(button2);
             Controls.Add(button1);
-            Controls.Add(label1);
             Margin = new Padding(2, 1, 2, 1);
             MaximizeBox = false;
-            MaximumSize = new Size(315, 254);
-            MinimumSize = new Size(315, 254);
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Судебные дела";
@@ -87,9 +107,8 @@
         }
 
         #endregion
-
-        private Label label1;
-        private Button button1;
-        private Button button2;
+        private MaterialButton button1;
+        private MaterialButton button2;
+        private MaterialLabel materialLabel1;
     }
 }

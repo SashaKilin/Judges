@@ -1,12 +1,22 @@
-﻿using Npgsql;
+﻿using MaterialSkin.Controls;
+using MaterialSkin;
+
+using Npgsql;
 
 namespace Judges
 {
-    public partial class    Form2 : Form
+    public partial class    Form2 : MaterialForm
     {
         public Form2()
         {
             InitializeComponent();
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.BlueGrey800, Primary.BlueGrey900,
+                Primary.BlueGrey500, Accent.LightBlue200,
+                TextShade.WHITE);
         }
 
         private void button1_Click(object sender, EventArgs e)

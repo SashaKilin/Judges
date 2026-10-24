@@ -1,9 +1,11 @@
 ﻿using System.Data;
 using Npgsql;
+using MaterialSkin.Controls;
+using MaterialSkin;
 
 namespace Judges
 {
-    public partial class MainForm : Form
+    public partial class MainForm : MaterialForm
     {
         private const string ConnectionString = "Host=localhost;Username=postgres;Password=pass;Database=postgres";
         private string user1;
@@ -18,10 +20,54 @@ namespace Judges
         {
             InitializeComponent();
 
+            ApplyDarkGridTheme(dataGridViewCourts);
+            ApplyDarkGridTheme(dataGridViewJudges);
+
             this.user1 = user;
             this.pass2 = pass;
             this.roleName = roleName;
             accessLevel = GetAccessLevel(roleName);
+
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.BlueGrey800, Primary.BlueGrey900,
+                Primary.BlueGrey500, Accent.LightBlue200,
+                TextShade.WHITE);
+        }
+
+        private static void ApplyDarkGridTheme(DataGridView grid)
+        {
+            grid.BackgroundColor = Color.FromArgb(33, 33, 33);
+            grid.ForeColor = Color.FromArgb(245, 245, 245);
+            grid.GridColor = Color.FromArgb(61, 61, 61);
+            grid.BorderStyle = BorderStyle.None;
+            grid.RowHeadersVisible = false;
+            grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
+            grid.AlternatingRowsDefaultCellStyle.ForeColor = Color.FromArgb(245, 245, 245);
+            grid.AlternatingRowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(73, 123, 216);
+            grid.AlternatingRowsDefaultCellStyle.SelectionForeColor = Color.White;
+
+            var headerStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(43, 43, 43),
+                ForeColor = Color.FromArgb(245, 245, 245),
+                SelectionBackColor = Color.FromArgb(73, 123, 216),
+                SelectionForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+            };
+            grid.ColumnHeadersDefaultCellStyle = headerStyle;
+
+            var cellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(33, 33, 33),
+                ForeColor = Color.FromArgb(245, 245, 245),
+                SelectionBackColor = Color.FromArgb(73, 123, 216),
+                SelectionForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F)
+            };
+            grid.DefaultCellStyle = cellStyle;
         }
 
         private static int GetAccessLevel(string roleName)
@@ -49,31 +95,45 @@ namespace Judges
             Application.Exit();
         }
 
-        private void MainForm_Load(object sender, EventArgs e)
+        private async void MainForm_Load(object sender, EventArgs e)
         {
-            canEdit = accessLevel == 3;
-            canViewCases = accessLevel > 1;
-            label1.Text = $"Добро пожаловать, {user1}! Роль: {roleName}";
+            SetLoadingState(true);
+            try
+            {
+                canEdit = accessLevel == 3;
+                canViewCases = accessLevel > 1;
+                label1.Text = $"Добро пожаловать, {user1}! Роль: {roleName}";
 
-            labelName.Visible = canEdit;
-            textBoxName.Visible = canEdit;
-            labelAddress.Visible = canEdit;
-            textBoxAddress.Visible = canEdit;
-            labelType.Visible = canEdit;
-            textBoxType.Visible = canEdit;
-            buttonAddCourt.Visible = canEdit;
-            buttonOpenCases.Visible = canViewCases;
-            buttonOpenCases.Enabled = canViewCases;
-            buttonOpenCases.Location = canEdit ? new Point(1170, 220) : new Point(720, 166);
-            LoadCourts();
+                labelName.Visible = canEdit;
+                textBoxName.Visible = canEdit;
+                labelAddress.Visible = canEdit;
+                textBoxAddress.Visible = canEdit;
+                labelType.Visible = canEdit;
+                textBoxType.Visible = canEdit;
+                buttonAddCourt.Visible = canEdit;
+                buttonOpenCases.Visible = canViewCases;
+                buttonOpenCases.Enabled = canViewCases;
+                await LoadCourtsAsync();
+            }
+            finally
+            {
+                SetLoadingState(false);
+            }
         }
 
-        private void LoadCourts()
+        private void SetLoadingState(bool isLoading)
+        {
+            progressBarLoading.Visible = isLoading;
+            UseWaitCursor = isLoading;
+            Application.DoEvents();
+        }
+
+        private async Task LoadCourtsAsync()
         {
             try
             {
                 using var connection = new NpgsqlConnection(ConnectionString);
-                connection.Open();
+                await connection.OpenAsync();
 
                 using var command = accessLevel == 2
                     ? new NpgsqlCommand("""
@@ -90,7 +150,7 @@ namespace Judges
                 {
                     command.Parameters.AddWithValue("login", user1);
                 }
-                using var reader = command.ExecuteReader();
+                using var reader = await command.ExecuteReaderAsync();
 
                 var courts = new DataTable();
                 courts.Load(reader);
@@ -263,7 +323,7 @@ namespace Judges
             }
         }
 
-        private void buttonAddCourt_Click(object sender, EventArgs e)
+        private async void buttonAddCourt_Click(object sender, EventArgs e)
         {
             if (!canEdit)
             {
@@ -302,7 +362,7 @@ namespace Judges
                 textBoxName.Clear();
                 textBoxAddress.Clear();
                 textBoxType.Clear();
-                LoadCourts();
+                await LoadCourtsAsync();
 
                 MessageBox.Show("Суд успешно добавлен.", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }

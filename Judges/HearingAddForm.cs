@@ -1,9 +1,11 @@
 using System.Data;
 using Npgsql;
+using MaterialSkin.Controls;
+using MaterialSkin;
 
 namespace Judges
 {
-    public partial class HearingAddForm : Form
+    public partial class HearingAddForm : MaterialForm
     {
         private const string ConnectionString = "Host=localhost;Username=postgres;Password=pass;Database=postgres";
         private readonly object caseId;
@@ -21,6 +23,13 @@ namespace Judges
             this.caseId = caseId;
             this.courtId = courtId;
             this.hearingId = hearingId;
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.BlueGrey800, Primary.BlueGrey900,
+                Primary.BlueGrey500, Accent.LightBlue200,
+                TextShade.WHITE);
         }
 
         private void HearingAddForm_Load(object sender, EventArgs e)

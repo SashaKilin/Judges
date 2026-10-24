@@ -1,9 +1,11 @@
 using System.Data;
 using Npgsql;
+using MaterialSkin.Controls;
+using MaterialSkin;
 
 namespace Judges
 {
-    public partial class CasesForm : Form
+    public partial class CasesForm : MaterialForm
     {
         private const string ConnectionString = "Host=localhost;Username=postgres;Password=pass;Database=postgres";
         private readonly object courtId;
@@ -18,12 +20,55 @@ namespace Judges
         public CasesForm(object courtId, string courtName, string userName, string roleName)
         {
             InitializeComponent();
+            ApplyDarkGridTheme(dataGridViewCases);
+            ApplyDarkGridTheme(dataGridViewHearings);
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.BlueGrey800, Primary.BlueGrey900,
+                Primary.BlueGrey500, Accent.LightBlue200,
+                TextShade.WHITE);
+
             this.courtId = courtId;
             this.courtName = courtName;
             this.userName = userName;
             canEdit = string.Equals(roleName, "судья", StringComparison.OrdinalIgnoreCase);
             canViewCases = !string.Equals(roleName, "гость", StringComparison.OrdinalIgnoreCase);
             isDefendant = string.Equals(roleName, "подсудимый", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static void ApplyDarkGridTheme(DataGridView grid)
+        {
+            grid.BackgroundColor = Color.FromArgb(33, 33, 33);
+            grid.ForeColor = Color.FromArgb(245, 245, 245);
+            grid.GridColor = Color.FromArgb(61, 61, 61);
+            grid.BorderStyle = BorderStyle.None;
+            grid.RowHeadersVisible = false;
+            grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
+            grid.AlternatingRowsDefaultCellStyle.ForeColor = Color.FromArgb(245, 245, 245);
+            grid.AlternatingRowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(73, 123, 216);
+            grid.AlternatingRowsDefaultCellStyle.SelectionForeColor = Color.White;
+
+            var headerStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(43, 43, 43),
+                ForeColor = Color.FromArgb(245, 245, 245),
+                SelectionBackColor = Color.FromArgb(73, 123, 216),
+                SelectionForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+            };
+            grid.ColumnHeadersDefaultCellStyle = headerStyle;
+
+            var cellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(33, 33, 33),
+                ForeColor = Color.FromArgb(245, 245, 245),
+                SelectionBackColor = Color.FromArgb(73, 123, 216),
+                SelectionForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F)
+            };
+            grid.DefaultCellStyle = cellStyle;
         }
 
         private void CasesForm_Load(object sender, EventArgs e)

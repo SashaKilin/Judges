@@ -1,31 +1,50 @@
-﻿using Npgsql;
+﻿using MaterialSkin;
+using MaterialSkin.Controls;
+
+using Npgsql;
 
 namespace Judges
 {
-    public partial class LogIn : Form
+    public partial class LogIn : MaterialForm
     {
         public LogIn()
         {
             InitializeComponent();
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.BlueGrey800, Primary.BlueGrey900,
+                Primary.BlueGrey500, Accent.LightBlue200,
+                TextShade.WHITE);
         }
 
-        public string user;
-        public string pass;
+        public string user = string.Empty;
+        public string pass = string.Empty;
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
-            string connStr = "Host=localhost;Username=postgres;Password=pass;Database=postgres";
-
-            using (var connection = new NpgsqlConnection(connStr))
+            if (string.IsNullOrWhiteSpace(textBox1.Text) || string.IsNullOrWhiteSpace(textBox2.Text))
             {
-                connection.Open();
+                MessageBox.Show("Введите логин и пароль.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string connStr = "Host=localhost;Username=postgres;Password=pass;Database=postgres";
+            user = textBox1.Text.Trim();
+            pass = textBox2.Text;
+
+            try
+            {
+                using var connection = new NpgsqlConnection(connStr);
+                await connection.OpenAsync();
 
                 EnsureRoles(connection);
                 EnsureParticipantAccountLink(connection);
                 EnsureParticipants(connection);
                 EnsureCaseParticipants(connection);
 
-                string sql = """
+                const string sql = """
                     SELECT COALESCE(csr.role_name, 'гость')
                     FROM account a
                     LEFT JOIN court_staff_roles csr ON csr.role_id = a.role_id
@@ -33,31 +52,30 @@ namespace Judges
                     LIMIT 1
                     """;
 
-                user = textBox1.Text;
-                pass = textBox2.Text;
-
-                string? roleName;
+                string? roleName = null;
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
+                    command.CommandTimeout = 5;
                     command.Parameters.AddWithValue("user", user);
                     command.Parameters.AddWithValue("pass", pass);
-
-                    roleName = command.ExecuteScalar() as string;
+                    roleName = (await command.ExecuteScalarAsync()) as string;
                 }
 
-                if (roleName != null)
+                if (string.IsNullOrWhiteSpace(roleName))
                 {
-                    MessageBox.Show("Успешный вход!");
-
-                    this.Close();
-
-                    MainForm mainform = new MainForm(user, pass, roleName);
-                    mainform.Show();
+                    MessageBox.Show("Учетная запись не найдена!", "Ошибка входа", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
                 }
-                else
-                {
-                    MessageBox.Show("Учетная запись не найдена!");
-                }
+
+                MessageBox.Show("Успешный вход!");
+
+                var mainForm = new MainForm(user, pass, roleName);
+                mainForm.Show();
+                Hide();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось подключиться к базе данных: {ex.Message}", "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -162,9 +180,9 @@ namespace Judges
 
         private void button2_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Hide();
 
-            Form1 form1 = new Form1();
+            var form1 = new Form1();
             form1.Show();
         }
     }
