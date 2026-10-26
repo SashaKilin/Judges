@@ -92,7 +92,7 @@ namespace Judges
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(327, 264);
+            ClientSize = new Size(313, 264);
             Controls.Add(materialLabel1);
             Controls.Add(button2);
             Controls.Add(button1);

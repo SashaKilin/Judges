@@ -1,4 +1,5 @@
 using System.Data;
+using Microsoft.VisualBasic;
 using Npgsql;
 using MaterialSkin.Controls;
 using MaterialSkin;
@@ -21,7 +22,11 @@ namespace Judges
         {
             InitializeComponent();
             ApplyDarkGridTheme(dataGridViewCases);
+            dataGridViewCases.EnableHeadersVisualStyles = false;
+            dataGridViewCases.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(43, 43, 43);
             ApplyDarkGridTheme(dataGridViewHearings);
+            dataGridViewHearings.EnableHeadersVisualStyles = false;
+            dataGridViewHearings.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(43, 43, 43);
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
@@ -89,6 +94,10 @@ namespace Judges
             buttonEditHearing.Enabled = canEdit;
             buttonDeleteHearing.Visible = canEdit;
             buttonDeleteHearing.Enabled = canEdit;
+            buttonCloseCase.Visible = canEdit;
+            buttonCloseCase.Enabled = canEdit;
+            buttonArchiveCases.Visible = canEdit;
+            buttonArchiveCases.Enabled = canEdit;
             EnsureFillingDateColumn();
             LoadCases();
         }
@@ -172,6 +181,7 @@ namespace Judges
                         JOIN account a ON a.participant_id = cp.participant_id
                         WHERE c.court_id = @court_id
                           AND a.login = @login
+                          AND COALESCE(c.is_archived, false) = false
                         ORDER BY c.filling_date DESC, c.case_number
                         """, connection)
                     : new NpgsqlCommand("""
@@ -185,6 +195,7 @@ namespace Judges
                         FROM cases c
                         LEFT JOIN judges j ON j.judge_id = c.judge_id
                         WHERE c.court_id = @court_id
+                          AND COALESCE(c.is_archived, false) = false
                         ORDER BY c.filling_date DESC, c.case_number
                         """, connection);
                 command.Parameters.AddWithValue("court_id", courtId);
@@ -314,6 +325,77 @@ namespace Judges
             {
                 LoadCases();
             }
+        }
+
+        private void buttonCloseCase_Click(object sender, EventArgs e)
+        {
+            if (!canEdit || selectedCaseId == null)
+            {
+                MessageBox.Show("Сначала выберите дело.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var finalDecision = Interaction.InputBox(
+                "Введите итоговое решение по этому делу:",
+                "Закрытие дела",
+                string.Empty,
+                -1,
+                -1);
+
+            if (string.IsNullOrWhiteSpace(finalDecision))
+            {
+                MessageBox.Show("Итоговое решение обязательно для закрытия дела.", "Проверка данных", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                "Закрыть дело и перенести его в архив?",
+                "Подтверждение",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                using var connection = new NpgsqlConnection(ConnectionString);
+                connection.Open();
+                using var command = new NpgsqlCommand("""
+                    UPDATE cases
+                    SET is_archived = true,
+                        final_decision = @final_decision,
+                        closed_at = CURRENT_TIMESTAMP
+                    WHERE case_id = @case_id
+                      AND COALESCE(is_archived, false) = false
+                    """, connection);
+                command.Parameters.AddWithValue("case_id", selectedCaseId);
+                command.Parameters.AddWithValue("final_decision", finalDecision.Trim());
+
+                if (command.ExecuteNonQuery() == 0)
+                {
+                    MessageBox.Show("Дело уже закрыто или не найдено.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                selectedCaseId = null;
+                selectedHearingId = null;
+                dataGridViewHearings.DataSource = new DataTable();
+                LoadCases();
+                MessageBox.Show("Дело закрыто и добавлено в архив.", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось закрыть дело: {ex.Message}", "Ошибка базы данных", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void buttonArchiveCases_Click(object sender, EventArgs e)
+        {
+            using var archiveForm = new CaseArchiveForm(courtId, courtName);
+            archiveForm.ShowDialog(this);
         }
 
         private void buttonEditHearing_Click(object sender, EventArgs e)

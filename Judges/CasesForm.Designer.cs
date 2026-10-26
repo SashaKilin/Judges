@@ -24,6 +24,8 @@ namespace Judges
             buttonAddHearing = new MaterialButton();
             buttonEditHearing = new MaterialButton();
             buttonDeleteHearing = new MaterialButton();
+            buttonCloseCase = new MaterialButton();
+            buttonArchiveCases = new MaterialButton();
             labelTitle = new MaterialLabel();
             ((System.ComponentModel.ISupportInitialize)dataGridViewCases).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewHearings).BeginInit();
@@ -50,7 +52,7 @@ namespace Judges
             buttonAddCase.Depth = 0;
             buttonAddCase.HighEmphasis = true;
             buttonAddCase.Icon = null;
-            buttonAddCase.Location = new Point(19, 548);
+            buttonAddCase.Location = new Point(30, 548);
             buttonAddCase.Margin = new Padding(4, 6, 4, 6);
             buttonAddCase.MouseState = MouseState.HOVER;
             buttonAddCase.Name = "buttonAddCase";
@@ -83,7 +85,7 @@ namespace Judges
             buttonAddHearing.Depth = 0;
             buttonAddHearing.HighEmphasis = true;
             buttonAddHearing.Icon = null;
-            buttonAddHearing.Location = new Point(260, 548);
+            buttonAddHearing.Location = new Point(234, 548);
             buttonAddHearing.Margin = new Padding(4, 6, 4, 6);
             buttonAddHearing.MouseState = MouseState.HOVER;
             buttonAddHearing.Name = "buttonAddHearing";
@@ -103,7 +105,7 @@ namespace Judges
             buttonEditHearing.Depth = 0;
             buttonEditHearing.HighEmphasis = true;
             buttonEditHearing.Icon = null;
-            buttonEditHearing.Location = new Point(492, 548);
+            buttonEditHearing.Location = new Point(428, 548);
             buttonEditHearing.Margin = new Padding(4, 6, 4, 6);
             buttonEditHearing.MouseState = MouseState.HOVER;
             buttonEditHearing.Name = "buttonEditHearing";
@@ -123,7 +125,7 @@ namespace Judges
             buttonDeleteHearing.Depth = 0;
             buttonDeleteHearing.HighEmphasis = true;
             buttonDeleteHearing.Icon = null;
-            buttonDeleteHearing.Location = new Point(720, 548);
+            buttonDeleteHearing.Location = new Point(624, 548);
             buttonDeleteHearing.Margin = new Padding(4, 6, 4, 6);
             buttonDeleteHearing.MouseState = MouseState.HOVER;
             buttonDeleteHearing.Name = "buttonDeleteHearing";
@@ -135,6 +137,46 @@ namespace Judges
             buttonDeleteHearing.UseAccentColor = false;
             buttonDeleteHearing.UseVisualStyleBackColor = true;
             buttonDeleteHearing.Click += buttonDeleteHearing_Click;
+            // 
+            // buttonCloseCase
+            // 
+            buttonCloseCase.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            buttonCloseCase.Density = MaterialButton.MaterialButtonDensity.Default;
+            buttonCloseCase.Depth = 0;
+            buttonCloseCase.HighEmphasis = true;
+            buttonCloseCase.Icon = null;
+            buttonCloseCase.Location = new Point(809, 548);
+            buttonCloseCase.Margin = new Padding(4, 6, 4, 6);
+            buttonCloseCase.MouseState = MouseState.HOVER;
+            buttonCloseCase.Name = "buttonCloseCase";
+            buttonCloseCase.NoAccentTextColor = Color.Empty;
+            buttonCloseCase.Size = new Size(134, 36);
+            buttonCloseCase.TabIndex = 7;
+            buttonCloseCase.Text = "Закрыть дело";
+            buttonCloseCase.Type = MaterialButton.MaterialButtonType.Contained;
+            buttonCloseCase.UseAccentColor = false;
+            buttonCloseCase.UseVisualStyleBackColor = true;
+            buttonCloseCase.Click += buttonCloseCase_Click;
+            // 
+            // buttonArchiveCases
+            // 
+            buttonArchiveCases.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            buttonArchiveCases.Density = MaterialButton.MaterialButtonDensity.Default;
+            buttonArchiveCases.Depth = 0;
+            buttonArchiveCases.HighEmphasis = true;
+            buttonArchiveCases.Icon = null;
+            buttonArchiveCases.Location = new Point(951, 548);
+            buttonArchiveCases.Margin = new Padding(4, 6, 4, 6);
+            buttonArchiveCases.MouseState = MouseState.HOVER;
+            buttonArchiveCases.Name = "buttonArchiveCases";
+            buttonArchiveCases.NoAccentTextColor = Color.Empty;
+            buttonArchiveCases.Size = new Size(103, 36);
+            buttonArchiveCases.TabIndex = 8;
+            buttonArchiveCases.Text = "Архив дел";
+            buttonArchiveCases.Type = MaterialButton.MaterialButtonType.Outlined;
+            buttonArchiveCases.UseAccentColor = false;
+            buttonArchiveCases.UseVisualStyleBackColor = true;
+            buttonArchiveCases.Click += buttonArchiveCases_Click;
             // 
             // labelTitle
             // 
@@ -156,6 +198,8 @@ namespace Judges
             Controls.Add(buttonAddHearing);
             Controls.Add(buttonEditHearing);
             Controls.Add(buttonDeleteHearing);
+            Controls.Add(buttonCloseCase);
+            Controls.Add(buttonArchiveCases);
             Controls.Add(dataGridViewHearings);
             Controls.Add(buttonAddCase);
             Controls.Add(dataGridViewCases);
@@ -175,6 +219,8 @@ namespace Judges
         private MaterialButton buttonAddHearing;
         private MaterialButton buttonEditHearing;
         private MaterialButton buttonDeleteHearing;
+        private MaterialButton buttonCloseCase;
+        private MaterialButton buttonArchiveCases;
         private MaterialLabel labelTitle;
     }
 }

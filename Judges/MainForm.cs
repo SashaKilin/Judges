@@ -21,7 +21,11 @@ namespace Judges
             InitializeComponent();
 
             ApplyDarkGridTheme(dataGridViewCourts);
+            dataGridViewCourts.EnableHeadersVisualStyles = false;
+            dataGridViewCourts.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(43, 43, 43);
             ApplyDarkGridTheme(dataGridViewJudges);
+            dataGridViewJudges.EnableHeadersVisualStyles = false;
+            dataGridViewJudges.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(43, 43, 43);
 
             this.user1 = user;
             this.pass2 = pass;

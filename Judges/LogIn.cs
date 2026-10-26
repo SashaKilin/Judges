@@ -31,7 +31,7 @@ namespace Judges
             }
 
             string connStr = "Host=localhost;Username=postgres;Password=pass;Database=postgres";
-            user = textBox1.Text.Trim();
+            user = textBox1.Text.Trim().ToLower();
             pass = textBox2.Text;
 
             try
@@ -43,6 +43,7 @@ namespace Judges
                 EnsureParticipantAccountLink(connection);
                 EnsureParticipants(connection);
                 EnsureCaseParticipants(connection);
+                EnsureCaseArchiveFields(connection);
 
                 const string sql = """
                     SELECT COALESCE(csr.role_name, 'гость')
@@ -66,8 +67,6 @@ namespace Judges
                     MessageBox.Show("Учетная запись не найдена!", "Ошибка входа", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
-
-                MessageBox.Show("Успешный вход!");
 
                 var mainForm = new MainForm(user, pass, roleName);
                 mainForm.Show();
@@ -140,6 +139,23 @@ namespace Judges
                     participant_id integer NOT NULL REFERENCES participants(participant_id),
                     PRIMARY KEY (case_id, participant_id)
                 );
+                """;
+
+            using var command = new NpgsqlCommand(sql, connection);
+            command.ExecuteNonQuery();
+        }
+
+        private static void EnsureCaseArchiveFields(NpgsqlConnection connection)
+        {
+            const string sql = """
+                ALTER TABLE cases
+                ADD COLUMN IF NOT EXISTS is_archived boolean NOT NULL DEFAULT false;
+
+                ALTER TABLE cases
+                ADD COLUMN IF NOT EXISTS final_decision text NOT NULL DEFAULT '';
+
+                ALTER TABLE cases
+                ADD COLUMN IF NOT EXISTS closed_at timestamp without time zone NULL;
                 """;
 
             using var command = new NpgsqlCommand(sql, connection);

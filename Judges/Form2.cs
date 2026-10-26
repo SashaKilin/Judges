@@ -49,12 +49,12 @@ namespace Judges
 
                     using (var command = new NpgsqlCommand(sql, connection))
                     {
-                        command.Parameters.AddWithValue("user", textBox1.Text);
+                        command.Parameters.AddWithValue("user", textBox1.Text.ToLower());
                         command.Parameters.AddWithValue("pass", textBox2.Text);
 
                         command.ExecuteNonQuery();
 
-                        MessageBox.Show("Регистрация прошла успешно!");
+                        MessageBox.Show("Регистрация прошла успешно!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                         this.Close();
                     }
